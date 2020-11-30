@@ -10,13 +10,13 @@ joinGameKb = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 # Basic reply keyboard
-newGameBtn = KeyboardButton(text='New game')
-helpBtn = KeyboardButton('Help')
+newGameBtn = KeyboardButton(text='New game 🎮')
+helpBtn = KeyboardButton('Rules 📖')
 menuKb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 menuKb.add(newGameBtn).add(helpBtn)
 
 # Game State keyboard
-rulesBtn = KeyboardButton(text='Rules') 
-surrenderBtn = KeyboardButton(text='Surrender')
+rulesBtn = KeyboardButton(text='Rules 📙') 
+surrenderBtn = KeyboardButton(text='Surrender 👋')
 gameKb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
 gameKb.add(surrenderBtn).add(rulesBtn)

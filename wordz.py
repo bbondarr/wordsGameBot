@@ -3,7 +3,7 @@ import requests
 import json
 
 from config import MAX_PLAYERS, WORDS_API_TOKEN, HOST
-from validation import checkWord, checkWordFirstChar, wordsToStr
+from util import checkWord, checkWordFirstChar, wordsToStr
 
 
 class Player:
@@ -51,14 +51,16 @@ class Wordz:
         word = Wordz.requestWord(word)
 
         if not word:
-            return 'There is no such word in a dictionary.'
+            return 'There is no such word in a dictionary. ❌'
         
-        if self.previousWord and not checkWordFirstChar(word, self.previousWord):
-            return 'Nice try, but you\'ve missed the first letter.'
+        if len(word) < 3:
+            return 'Word must be at least 3 characters long. ❌'
 
-        print([v for k, v in self.words.items() if word in v], bool([v for k, v in self.words.items() if word in v]))
+        if self.previousWord and not checkWordFirstChar(word, self.previousWord):
+            return 'Nice try, but you\'ve missed the first letter. ❌'
+
         if [v for k, v in self.words.items() if word in v]:
-            return 'The word was already used.'
+            return 'The word was already used. ❌'
 
         self.currentPlayer.score += 1
         self.words[self.currentPlayer.name].append(word)
@@ -69,14 +71,16 @@ class Wordz:
 
         prevName = self.currentPlayer.name
         self.currentPlayer = self.players[next]
-        return f'Wise choise, @{prevName}! @{self.currentPlayer.name}, your turn now.'
+        return (f'Wise choise, @{prevName}! ✅\n'+
+                f'@{self.currentPlayer.name}, yours on \'{word[-1].upper()}\'.'
+        )
 
 
     @staticmethod
     @checkWord
     def requestWord(word):
         word = word.lower()
-        print(word)
+
         url = f'https://wordsapiv1.p.rapidapi.com/words/{word}'
         headers = {
             'x-rapidapi-key': WORDS_API_TOKEN,
@@ -84,7 +88,6 @@ class Wordz:
             }
         response = requests.request("GET", url, headers=headers).json()
         try:
-            print(response)
             partOfSpeech = response['results'][0]['partOfSpeech']
             if partOfSpeech == 'noun':
                 word = response['word']

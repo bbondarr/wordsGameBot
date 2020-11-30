@@ -5,6 +5,4 @@ EXPIRATION_VALUE = 2
 MIN_PLAYERS = 1
 MAX_PLAYERS = 4
 
-NEW_GAME_KW = ['new game', 'New game', 'New Game', 'NEW GAME', '/newgame']
-END_GAME_KW = ['end game', 'End game', 'End Game', 'END GAME', '/endgame']
 START_KW = ['start','Start', 'START', '/start','help', 'Help', 'HELP', '/help']
