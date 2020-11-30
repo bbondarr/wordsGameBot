@@ -1,54 +1,103 @@
 import random
 import requests
+import json
 
 from config import MAX_PLAYERS, WORDS_API_TOKEN, HOST
+from validation import checkWord, checkWordFirstChar, wordsToStr
 
-url = "https://wordsapiv1.p.rapidapi.com/words/hatchback"
-
-headers = {
-    'x-rapidapi-key': WORDS_API_TOKEN,
-    'x-rapidapi-host': HOST
-    }
-
-response = requests.request("GET", url, headers=headers)
-
-print(response.text)
 
 class Player:
     def __init__(self, name):
         self.name = name
         self.score = 0
 
+
 class Wordz:
     MAX_PLAYERS = 4
 
     def __init__(self):
+        self.words = {}
         self.playing = False
         self.players = []
         self.currentPlayer = None
+        self.previousWord = None
+
 
     def addPlayer(self, playerName):
         if len(self.players) < self.MAX_PLAYERS and not self.checkPlayer(playerName):
             self.players.append(Player(playerName))
+            self.words[playerName] = []
+
+
+    def removePlayer(self, playerName):
+        player = [p for p in self.players if p.name == playerName][0]
+        self.players = [p for p in self.players if p.name != playerName]
+        if len(self.players) == 1:
+            return self.end()
+        return player
+
 
     def checkPlayer(self, playerName):
         res = [p.name for p in self.players if p.name == playerName]
         return bool(len(res))
 
+
     def start(self):
         self.playing = True
         self.currentPlayer = self.players[0]
-        return 'startGamePlaceholder'
+
 
     def makeTurn(self, word):
-        
-        if word:
-            self.currentPlayer.score += 1
-            next = self.players.index(self.currentPlayer)+1 
-            if self.players.index(self.currentPlayer)+1 >= len(self.players):
-                next = 0
+        word = Wordz.requestWord(word)
 
-            self.currentPlayer = self.players[next]
+        if not word:
+            return 'There is no such word in a dictionary.'
+        
+        if self.previousWord and not checkWordFirstChar(word, self.previousWord):
+            return 'Nice try, but you\'ve missed the first letter.'
+
+        print([v for k, v in self.words.items() if word in v], bool([v for k, v in self.words.items() if word in v]))
+        if [v for k, v in self.words.items() if word in v]:
+            return 'The word was already used.'
+
+        self.currentPlayer.score += 1
+        self.words[self.currentPlayer.name].append(word)
+        self.previousWord = word
+        next = self.players.index(self.currentPlayer)+1 
+        if self.players.index(self.currentPlayer)+1 >= len(self.players):
+            next = 0
+
+        prevName = self.currentPlayer.name
+        self.currentPlayer = self.players[next]
+        return f'Wise choise, @{prevName}! @{self.currentPlayer.name}, your turn now.'
+
+
+    @staticmethod
+    @checkWord
+    def requestWord(word):
+        word = word.lower()
+        print(word)
+        url = f'https://wordsapiv1.p.rapidapi.com/words/{word}'
+        headers = {
+            'x-rapidapi-key': WORDS_API_TOKEN,
+            'x-rapidapi-host': HOST
+            }
+        response = requests.request("GET", url, headers=headers).json()
+        try:
+            print(response)
+            partOfSpeech = response['results'][0]['partOfSpeech']
+            if partOfSpeech == 'noun':
+                word = response['word']
+                return word
+        except KeyError: 
+            return None
+
+
+    def end(self):
+        self.playing = False
+        return {"winner": self.players[0],
+                "words": wordsToStr(self.words)}
+
 
     def restart(self):
         self.__init__()
