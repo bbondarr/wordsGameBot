@@ -1,8 +1,7 @@
-import random
 import requests
 import json
 
-from config import MAX_PLAYERS, WORDS_API_TOKEN, HOST
+from config import MAX_PLAYERS as _MAX_PLAYERS, WORDS_API_TOKEN, HOST
 from util import checkWord, checkWordFirstChar, wordsToStr
 
 
@@ -13,7 +12,7 @@ class Player:
 
 
 class Wordz:
-    MAX_PLAYERS = 4
+    MAX_PLAYERS = _MAX_PLAYERS
 
     def __init__(self):
         self.words = {}
@@ -89,7 +88,7 @@ class Wordz:
         response = requests.request("GET", url, headers=headers).json()
         try:
             partOfSpeech = response['results'][0]['partOfSpeech']
-            if partOfSpeech == 'noun':
+            if partOfSpeech == 'noun' or partOfSpeech == 'verb':
                 word = response['word']
                 return word
         except KeyError: 

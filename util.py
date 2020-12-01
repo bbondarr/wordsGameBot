@@ -1,18 +1,21 @@
 import re
 
+
 def getUsername(user):
     return (user.username or
             user.first_name or 
             user.last_name
     )
 
-def wordsToStr(words):
+
+def wordsToStr(word):
     str = ''
-    for player, vals in words.items():
-        str += f'{player} words:\n'
-        for words in vals:
-            str += f'\t{words}\n'
+    for player, words in word.items():
+        str += f'@{player} words ({len(words)}):\n'
+        for word in words:
+            str += f'\t\t{word}\n'
     return str
+
 
 def checkWord(func):
     def inner (val):
@@ -22,6 +25,7 @@ def checkWord(func):
         return func(val)            
 
     return inner  
+
 
 def checkWordFirstChar(currWord, prevWord):
     return currWord.startswith(prevWord[-1])
