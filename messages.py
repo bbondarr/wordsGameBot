@@ -1,11 +1,11 @@
-helloStr = ('Hello, I\'m a Bot who hosts a simple Words game.' + 
+helloStr = ('Hello 👋!\n\n I\'m a Bot who hosts a simple Words game.' + 
             'Each player should spell a word ' +
             'that starts with the last lesson of the previous word. ' +
-            '\n\nPress \'New game\' to satrt and have fun!')
+            '\n\nPress \'New game\' to start and have fun!')
 
-rulesStr = ('Rules 📙:\n\n' +
+rulesStr = ('Rules 📗:\n\n' +
             '- 👫 The game should be played by 2 to 6 members of the chat.\n' +
-            '- 🈶 Each member should call to memory one word ' +
+            '- 🧩 Each member should call to memory one word ' +
             'that starts with the letter that previous player\'s word ends with.\n' +
             '- 👋 If you can\'t come up with the word - press \'Surrender\' button ' +
             'and the game is over for you.\n' + 

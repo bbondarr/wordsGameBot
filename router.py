@@ -5,15 +5,14 @@ from aiogram.types import Message, CallbackQuery
 from loader import bot, dp, game
 from util import getUsername
 from messages import helloStr, rulesStr
-from keyboards import menuKb, joinGameKb, gameKb
+from keyboards import menuKb, joinGameKb, gameKb, settingsKb, choiseKb
 from config import START_KW, MIN_PLAYERS, MAX_PLAYERS, EXPIRATION_VALUE
 
 
-#============================================RULES ROUTE============================================
-@dp.message_handler(text=START_KW)
+#============================================MENU ROUTE============================================
+@dp.message_handler(text=[*START_KW, 'Back ◁'])
 async def ohHiMark(message: Message):
     await message.answer(helloStr, reply_markup=menuKb)
-    print(game.players, game.playing)
 
 
 #=========================================INIT STAGE ROUTES=========================================
@@ -25,12 +24,49 @@ async def rulesI(message: Message):
 @dp.message_handler(text='New game 🎮')
 async def newGame(message: Message):
     game.restart()
-    print(game.players, game.playing)
     global expiration
     expiration = datetime.now() + timedelta(minutes=EXPIRATION_VALUE)
     await message.answer(
-        f'Waiting 2 minutes for players to join...', reply_markup=joinGameKb
+        f'Waiting 2 minutes for players to join...\n' + '🧑‍💻' * MAX_PLAYERS, 
+        reply_markup=joinGameKb
     )
+
+
+#==========================================SETTINGS ROUTES==========================================
+@dp.message_handler(text='Settings ⚙️')
+async def settings(message: Message):
+    await message.answer(
+        f'Choose what you wanna change:', reply_markup=settingsKb
+    )
+
+
+@dp.message_handler(text='Change Max. Players 👫')
+async def setMaxPlayers(message: Message):
+    # await message.answer(
+    #     f'Set up maximal amount of players.\n\nCurrent - {MAX_PLAYERS}', 
+    #     reply_markup=choiseKb
+    # )
+    await message.answer(
+        'Gonna be implemented soon... 🔨', reply_markup=settingsKb
+    )
+
+
+@dp.callback_query_handler(text='inc')
+async def incrementPlayers(call: CallbackQuery, max=MAX_PLAYERS):
+    # max += 1
+    # updatedText = call.message.text.replace(f'{max-1}', str(max))
+    # await call.message.edit_text(updatedText, reply_markup=choiseKb)
+    # MAX_PLAYERS = max
+    await call.message.edit_text('Gonna be implemented soon...')
+
+
+@dp.callback_query_handler(text='dec')
+async def decrementPlayers(call: CallbackQuery, max=MAX_PLAYERS):
+    # max -= 1
+    # updatedText = call.message.text.replace(f'{max+1}', str(max))
+    # await call.message.edit_text(updatedText, reply_markup=choiseKb)
+    # MAX_PLAYERS = max
+    await call.message.edit_text('Gonna be implemented soon...')
 
 
 #====================================PLAYER POLLING STAGE ROUTES===================================
@@ -38,14 +74,13 @@ async def startGame(call: CallbackQuery):
     if not game.playing:
         game.start()
         await call.message.answer(
-            ('Alright, the game begins!'+
+            ('Alright, the game begins! '+
             f'@{game.currentPlayer.name}, you can start with any word.'),
             reply_markup=gameKb)
 
 
 @dp.callback_query_handler(text='joinGame')
 async def joinGame(call: CallbackQuery):
-    print(game.players, game.playing)
     # Stop polling criterion
     if (expiration - datetime.now() <= timedelta(0) and
         len(game.players) < MIN_PLAYERS):
@@ -59,7 +94,9 @@ async def joinGame(call: CallbackQuery):
         game.addPlayer(username)
     
         updatedText = (
-            call.message.text + f'\n\n@{username} joined!' + f'\n\n{len(game.players)}/{MAX_PLAYERS}.')
+            call.message.text + f'\n\n@{username} joined!' + 
+            f'\n\n{len(game.players)}/{MAX_PLAYERS}.'
+        ).replace('🧑‍💻', '🙋', 1)
         await call.message.edit_text(text=updatedText)
         await call.message.edit_reply_markup(reply_markup=joinGameKb)
     else:
