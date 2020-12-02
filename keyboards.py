@@ -24,12 +24,14 @@ gameKb.add(surrenderBtn).add(rulesBtn)
 
 # Settings keyboard
 setMaxPlayersBtn = KeyboardButton('Change Max. Players 👫')
+descriptionBtn = KeyboardButton('Change gamemode 🎲')
 goBackBtn = KeyboardButton('Back ◁')
 settingsKb = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-settingsKb.add(setMaxPlayersBtn).add(goBackBtn)
+settingsKb.add(setMaxPlayersBtn).add(descriptionBtn).add(goBackBtn)
 
-# Settings inner keyboard
+# Settings inner +/- keyboard
 choiseKb = InlineKeyboardMarkup(inline_keyboard=[
-    [ InlineKeyboardButton(text='+', callback_data='inc') ],
-    [ InlineKeyboardButton(text='-', callback_data='dec') ]    
+    [ InlineKeyboardButton(text='Default ', callback_data='inc') ],
+    [ InlineKeyboardButton(text='Definition', callback_data='dec') ],  
+    [ InlineKeyboardButton(text='Back ◁', callback_data='back') ]
 ])

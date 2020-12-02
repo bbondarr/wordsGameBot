@@ -40,6 +40,13 @@ async def settings(message: Message):
     )
 
 
+@dp.message_handler(text='Change gamemode 🎲')
+async def setGameMode(message: Message):
+    await message.answer(
+        f'Game Mode: (currently {game.mode})', reply_markup=choiseKb
+    )
+
+
 @dp.message_handler(text='Change Max. Players 👫')
 async def setMaxPlayers(message: Message):
     # await message.answer(
@@ -51,22 +58,27 @@ async def setMaxPlayers(message: Message):
     )
 
 
-@dp.callback_query_handler(text='inc')
-async def incrementPlayers(call: CallbackQuery, max=MAX_PLAYERS):
-    # max += 1
-    # updatedText = call.message.text.replace(f'{max-1}', str(max))
-    # await call.message.edit_text(updatedText, reply_markup=choiseKb)
-    # MAX_PLAYERS = max
-    await call.message.edit_text('Gonna be implemented soon...')
-
-
 @dp.callback_query_handler(text='dec')
-async def decrementPlayers(call: CallbackQuery, max=MAX_PLAYERS):
-    # max -= 1
-    # updatedText = call.message.text.replace(f'{max+1}', str(max))
-    # await call.message.edit_text(updatedText, reply_markup=choiseKb)
-    # MAX_PLAYERS = max
-    await call.message.edit_text('Gonna be implemented soon...')
+async def modeDefault(call: CallbackQuery,):
+    if game.mode == 'default':
+        updatedText = call.message.text.replace(game.mode, 'definition')
+        game.mode = 'definition'
+        await call.message.edit_text(updatedText, reply_markup=choiseKb)
+    else: return
+
+
+@dp.callback_query_handler(text='inc')
+async def modeDefinition(call: CallbackQuery):
+    if game.mode == 'definition':
+        updatedText = call.message.text.replace(game.mode, 'default')
+        game.mode = 'default'
+        await call.message.edit_text(updatedText, reply_markup=choiseKb)
+    else: return
+
+
+@dp.callback_query_handler(text='back')
+async def back(call: CallbackQuery):
+    await settings(call.message)
 
 
 #====================================PLAYER POLLING STAGE ROUTES===================================
@@ -100,8 +112,9 @@ async def joinGame(call: CallbackQuery):
         await call.message.edit_text(text=updatedText)
         await call.message.edit_reply_markup(reply_markup=joinGameKb)
     else:
-        await call.answer("You already joined the game!", show_alert=True)
-
+        await call.answer("You already joined the game! (or the game is already going)", 
+        show_alert=True
+    )
     # Start game criterion
     if len(game.players) == MAX_PLAYERS:
         await startGame(call)
@@ -150,5 +163,7 @@ async def pollWord(message: Message):
 
     username = getUsername(message.from_user)
     if username == game.currentPlayer.name:
-        msg = game.makeTurn(message.text)
-        await message.answer(msg)
+        response = game.makeTurn(message.text)
+        if game.mode == 'definition' and response['message'].startswith('Wise'):
+            await message.answer(response['definition'])
+        await message.answer(response['message'])
