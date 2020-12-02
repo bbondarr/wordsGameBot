@@ -1,8 +1,7 @@
-import random
 import requests
 import json
 
-from config import MAX_PLAYERS, WORDS_API_TOKEN, HOST
+from config import MAX_PLAYERS as _MAX_PLAYERS, WORDS_API_TOKEN, HOST
 from util import checkWord, checkWordFirstChar, wordsToStr
 
 
@@ -13,7 +12,8 @@ class Player:
 
 
 class Wordz:
-    MAX_PLAYERS = 4
+    MAX_PLAYERS = _MAX_PLAYERS
+    mode = 'default'
 
     def __init__(self):
         self.words = {}
@@ -31,6 +31,14 @@ class Wordz:
 
     def removePlayer(self, playerName):
         player = [p for p in self.players if p.name == playerName][0]
+        
+        # Changing turns
+        if self.currentPlayer.name == player.name:
+            next = self.players.index(self.currentPlayer)+1 
+            if self.players.index(self.currentPlayer)+1 >= len(self.players):
+                next = 0
+            self.currentPlayer = self.players[next]
+
         self.players = [p for p in self.players if p.name != playerName]
         if len(self.players) == 1:
             return self.end()
@@ -48,19 +56,25 @@ class Wordz:
 
 
     def makeTurn(self, word):
-        word = Wordz.requestWord(word)
+        response = Wordz.requestWord(word)
+        try:
+            word = response['word']
+            definition = response['definition']
+            definition = f'{word} - {definition}\n\n🧑‍🎓📃'
+        except KeyError: pass
+        except TypeError: word = None
 
         if not word:
-            return 'There is no such word in a dictionary. ❌'
+            return {'message': 'There is no such word in a dictionary. ❌'}
         
         if len(word) < 3:
-            return 'Word must be at least 3 characters long. ❌'
+            return {'message': 'Word must be at least 3 characters long. ❌'}
 
         if self.previousWord and not checkWordFirstChar(word, self.previousWord):
-            return 'Nice try, but you\'ve missed the first letter. ❌'
+            return {'message': 'Nice try, but you\'ve missed the first letter. ❌'}
 
         if [v for k, v in self.words.items() if word in v]:
-            return 'The word was already used. ❌'
+            return {'message': 'The word was already used. ❌'}
 
         self.currentPlayer.score += 1
         self.words[self.currentPlayer.name].append(word)
@@ -71,9 +85,10 @@ class Wordz:
 
         prevName = self.currentPlayer.name
         self.currentPlayer = self.players[next]
-        return (f'Wise choise, @{prevName}! ✅\n'+
+
+        return {'message': (f'Wise choise, @{prevName}! ✅\n'+
                 f'@{self.currentPlayer.name}, yours on \'{word[-1].upper()}\'.'
-        )
+        ),      'definition': definition}
 
 
     @staticmethod
@@ -89,9 +104,10 @@ class Wordz:
         response = requests.request("GET", url, headers=headers).json()
         try:
             partOfSpeech = response['results'][0]['partOfSpeech']
-            if partOfSpeech == 'noun':
+            if partOfSpeech == 'noun' or partOfSpeech == 'verb':
                 word = response['word']
-                return word
+                return {'word': word, 
+                        'definition': response['results'][0]['definition']}
         except KeyError: 
             return None
 
