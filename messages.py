@@ -1,6 +1,6 @@
 helloStr = ('Hello 👋!\n\n I\'m a Bot who hosts a simple Words game.' + 
             'Each player should spell a word ' +
-            'that starts with the last lesson of the previous word. ' +
+            'that starts with the last letter of the previous word. ' +
             '\n\nPress \'New game\' to start and have fun!')
 
 rulesStr = ('Rules 📗:\n\n' +
